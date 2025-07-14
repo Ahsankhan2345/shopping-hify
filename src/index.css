@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fade and slide up animation */
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeUp {
+  animation: fadeUp 1s ease-out forwards;
+}
+
+/* Slow zoom-in for background video */
+@keyframes zoomSlow {
+  0% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1.1);
+  }
+}
+
+.animate-zoomSlow {
+  animation: zoomSlow 20s ease-in-out infinite alternate;
+}
+
+/* Button glow effect */
+.glow-btn {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+}
+
+.glow-btn:hover {
+  box-shadow: 0 0 40px rgba(16, 185, 129, 0.8);
+}
