@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
+const USD_TO_PKR = 280; // conversion rate
+
 // Fetch all products from FakeStore API
 export const fetchProducts = createAsyncThunk(
   "products/fetchAll",
@@ -9,7 +11,7 @@ export const fetchProducts = createAsyncThunk(
     return response.data.map((item) => ({
       _id: item.id.toString(),
       name: item.title,
-      price: item.price,
+      price: Math.round(item.price * USD_TO_PKR), // convert USD → PKR
       description: item.description,
       imageUrl: item.image,
     }));
@@ -25,7 +27,7 @@ export const fetchProductById = createAsyncThunk(
     return {
       _id: item.id.toString(),
       name: item.title,
-      price: item.price,
+      price: Math.round(item.price * USD_TO_PKR), // convert USD → PKR
       description: item.description,
       imageUrl: item.image,
     };

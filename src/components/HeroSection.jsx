@@ -1,18 +1,40 @@
 import { Link } from "react-router-dom";
+import { useEffect, useRef } from "react";
 
 function HeroSection() {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (vid) {
+      const playPromise = vid.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((e) => {
+          console.warn("Video autoplay prevented:", e);
+        });
+      }
+    }
+  }, []);
+
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* HERO SECTION */}
       <section className="relative w-full h-full">
         {/* Background Video with subtle zoom-in animation */}
         <video
-          src="/hero.mp4"
+          ref={videoRef}
+          className="absolute inset-0 w-full h-full object-cover scale-105"
           autoPlay
           muted
           loop
-          className="absolute inset-0 w-full h-full object-cover scale-105 animate-zoomSlow"
-        />
+          playsInline
+          preload="auto"
+          aria-label="Background promotional video"
+        >
+          {/* Files in public/ are served from root */}
+          <source src="/hero.webm" type="video/webm" />
+          <source src="/hero.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
 
         {/* Overlay Content */}
         <div className="absolute inset-0 bg-black bg-opacity-60 flex flex-col justify-center items-center text-center px-6">
