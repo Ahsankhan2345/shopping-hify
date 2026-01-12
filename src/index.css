@@ -40,3 +40,10 @@
 .glow-btn:hover {
   box-shadow: 0 0 40px rgba(16, 185, 129, 0.8);
 }
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+}

@@ -28,7 +28,14 @@ function App() {
 
         <div className="flex-grow">
           <Routes>
-            {/* Auth entry */}
+           {
+
+           }
+            
+           
+            <Route path="/" element={<Home />} />
+
+          
             <Route
               path="/login"
               element={
@@ -46,15 +53,8 @@ function App() {
               }
             />
 
-            {/* Protected */}
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Home />
-                </ProtectedRoute>
-              }
-            />
+          \
+            
             <Route
               path="/products"
               element={
@@ -95,6 +95,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            
+            
             <Route
               path="/admin"
               element={
@@ -112,7 +114,6 @@ function App() {
               }
             />
 
-            {/* Fallback */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser, clearError } from "../redux/slices/userSlice";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
+import { FiLock, FiUser, FiMail, FiEye, FiEyeOff, FiUserPlus, FiAlertTriangle } from "react-icons/fi";
 
 const Register = () => {
   const dispatch = useDispatch();
@@ -19,200 +20,167 @@ const Register = () => {
 
   const nameRef = useRef(null);
 
-  // Focus on first input when page loads
   useEffect(() => {
     nameRef.current?.focus();
   }, []);
 
-  // Redirect to home page after signup
   useEffect(() => {
     if (userInfo) {
       navigate("/", { replace: true });
     }
   }, [userInfo, navigate]);
 
-  // Auto-clear error after 2.5s
   useEffect(() => {
     if (localError || error) {
       const timer = setTimeout(() => {
         setLocalError("");
         dispatch(clearError());
-      }, 2500);
+      }, 3500);
       return () => clearTimeout(timer);
     }
   }, [localError, error, dispatch]);
 
-  const validate = () => {
-    if (!name.trim() || !email.trim() || !password) {
-      return "All fields are required.";
-    }
-    if (password.length < 6) {
-      return "Password must be at least 6 characters.";
-    }
-    return "";
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const vErr = validate();
-    if (vErr) {
-      setLocalError(vErr);
+    if (!name.trim() || !email.trim() || !password) {
+      setLocalError("All neural fields are required for registration.");
       return;
     }
-    try {
-      await dispatch(registerUser({ name: name.trim(), email, password }));
-    } catch {
-      // error handled in slice
+    if (password.length < 6) {
+      setLocalError("Security key must be at least 6 characters.");
+      return;
     }
-  };
-
-  const handleOAuth = (provider) => {
-    if (loading) return;
-    alert(`${provider} signup not implemented. Integrate Firebase/Auth0 for real auth.`);
+    dispatch(registerUser({ name: name.trim(), email, password }));
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 px-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#020617] relative overflow-hidden px-4 py-12">
+    
+      <div className="absolute top-[-10%] right-[-10%] w-[60%] md:w-[40%] h-[40%] bg-emerald-500/10 blur-[80px] md:blur-[120px] rounded-full" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[60%] md:w-[40%] h-[40%] bg-emerald-500/5 blur-[80px] md:blur-[120px] rounded-full" />
+
       <motion.div
-        initial={{ opacity: 0, scale: 0.97 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.45, ease: "easeOut" }}
-        className="w-full max-w-md bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-8 relative overflow-hidden"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-[480px] bg-white/5 backdrop-blur-2xl rounded-[2.5rem] border border-white/10 shadow-2xl p-6 sm:p-10 relative z-10"
       >
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-t-3xl" />
-
-        <h2 className="text-3xl font-extrabold text-gray-900 mb-1 text-center">
-          Create Account
-        </h2>
-        <p className="text-sm text-gray-500 mb-6 text-center">
-          Sign up to <span className="font-medium text-emerald-500">Shopping HIFY</span> and start your journey.
-        </p>
-
-        {(localError || error) && (
-          <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-2 rounded mb-4 flex items-center gap-2">
-            <span className="text-sm">{localError || error}</span>
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex p-3 rounded-2xl bg-emerald-500/10 text-emerald-500 mb-4 border border-emerald-500/20">
+            <FiUserPlus className="text-2xl md:text-3xl" />
           </div>
-        )}
+          <h2 className="text-2xl md:text-3xl font-black text-white tracking-tighter">
+            Join the <span className="text-emerald-500">Grid</span>
+          </h2>
+          <p className="text-slate-400 text-xs md:text-sm mt-2 font-medium">
+            Create your ShopNova AI profile
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="relative">
-            <input
-              ref={nameRef}
-              id="name"
-              type="text"
-              placeholder="Username"
-              className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                setLocalError("");
-                dispatch(clearError());
-              }}
-              disabled={loading}
-              required
-            />
-            <label
-              htmlFor="name"
-              className="absolute left-4 -top-2 bg-white px-1 text-xs font-medium text-gray-600"
+        <AnimatePresence mode="wait">
+          {(localError || error) && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl mb-6 flex items-center gap-3 text-[10px] md:text-xs font-bold uppercase tracking-wider"
             >
+              <FiAlertTriangle className="flex-shrink-0" />
+              <span>{localError || error}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
+        
+          <div className="space-y-1.5">
+            <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">
               Username
             </label>
+            <div className="relative group">
+              <FiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-500 transition-colors" />
+              <input
+                ref={nameRef}
+                type="text"
+                placeholder="Unique identifier"
+                className="w-full pl-11 pr-4 py-3.5 md:py-4 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl text-white text-sm placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={loading}
+              />
+            </div>
           </div>
 
-          <div className="relative">
-            <input
-              id="email"
-              type="email"
-              placeholder="Email address"
-              className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setLocalError("");
-                dispatch(clearError());
-              }}
-              disabled={loading}
-              required
-            />
-            <label
-              htmlFor="email"
-              className="absolute left-4 -top-2 bg-white px-1 text-xs font-medium text-gray-600"
-            >
-              Email
+        <div className="space-y-1.5">
+            <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">
+              Neural Mail
             </label>
+            <div className="relative group">
+              <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-500 transition-colors" />
+              <input
+                type="email"
+                placeholder="email@example.com"
+                className="w-full pl-11 pr-4 py-3.5 md:py-4 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl text-white text-sm placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+              />
+            </div>
           </div>
 
-          <div className="relative">
-            <input
-              id="password"
-              type={showPwd ? "text" : "password"}
-              placeholder="Password"
-              className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition pr-12"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setLocalError("");
-                dispatch(clearError());
-              }}
-              disabled={loading}
-              required
-            />
-            <label
-              htmlFor="password"
-              className="absolute left-4 -top-2 bg-white px-1 text-xs font-medium text-gray-600"
-            >
-              Password
+          {/* Password Field */}
+          <div className="space-y-1.5">
+            <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">
+              Security Key
             </label>
-            <button
-              type="button"
-              onClick={() => setShowPwd((s) => !s)}
-              aria-label={showPwd ? "Hide password" : "Show password"}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-600"
-            >
-              {showPwd ? "Hide" : "Show"}
-            </button>
+            <div className="relative group">
+              <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-500 transition-colors" />
+              <input
+                type={showPwd ? "text" : "password"}
+                placeholder="••••••••"
+                className="w-full pl-11 pr-12 py-3.5 md:py-4 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl text-white text-sm placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPwd(!showPwd)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white p-1"
+              >
+                {showPwd ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+              </button>
+            </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:brightness-105 transition"
+            className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-800 text-slate-950 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98] text-xs md:text-sm mt-2"
           >
-            {loading ? "Signing up..." : "Sign Up"}
+            {loading ? "Syncing..." : "Create Profile"}
           </button>
         </form>
 
-        <div className="my-4 flex items-center gap-2">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-xs uppercase text-gray-400">or</span>
-          <div className="flex-1 h-px bg-gray-200" />
+        <div className="my-6 flex items-center gap-4">
+          <div className="flex-1 h-px bg-white/10" />
+          <span className="text-[8px] md:text-[10px] font-black uppercase text-slate-600 tracking-[0.3em] whitespace-nowrap">Rapid Access</span>
+          <div className="flex-1 h-px bg-white/10" />
         </div>
 
-        <div className="flex gap-3 mb-6">
-          <button
-            type="button"
-            onClick={() => handleOAuth("Google")}
-            disabled={loading}
-            className="flex-1 flex justify-center items-center gap-2 border border-gray-200 rounded-xl py-2 text-sm hover:shadow-md transition disabled:opacity-60"
-          >
-            <FcGoogle className="w-5 h-5" />
-            Sign up with Google
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button className="flex-1 flex justify-center items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl py-3 text-[10px] font-bold text-white transition-all uppercase tracking-widest">
+            <FcGoogle size={18} /> Google
           </button>
-          <button
-            type="button"
-            onClick={() => handleOAuth("GitHub")}
-            disabled={loading}
-            className="flex-1 flex justify-center items-center gap-2 border border-gray-200 rounded-xl py-2 text-sm hover:shadow-md transition disabled:opacity-60"
-          >
-            <FaGithub className="w-5 h-5" />
-            Sign up with GitHub
+          <button className="flex-1 flex justify-center items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl py-3 text-[10px] font-bold text-white transition-all uppercase tracking-widest">
+            <FaGithub size={18} /> GitHub
           </button>
         </div>
 
-        <p className="mt-1 text-center text-sm">
-          Already have an account?{" "}
-          <Link to="/login" className="text-emerald-500 font-medium hover:underline">
-            Login
+        <p className="mt-8 text-center text-[10px] md:text-xs text-slate-500 font-bold uppercase tracking-widest">
+          Already synced?{" "}
+          <Link to="/login" className="text-emerald-500 hover:text-emerald-400 underline decoration-emerald-500/30 underline-offset-4">
+            Login Access
           </Link>
         </p>
       </motion.div>

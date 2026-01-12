@@ -3,7 +3,6 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 const USERS_KEY = "shopping_hify_users";
 const USER_INFO_KEY = "shopping_hify_userInfo";
 
-// Load users list
 const loadUsers = () => {
   try {
     return JSON.parse(localStorage.getItem(USERS_KEY)) || [];
@@ -15,7 +14,6 @@ const saveUsers = (users) => {
   localStorage.setItem(USERS_KEY, JSON.stringify(users));
 };
 
-// Load session based on where user chose to remember
 const loadSession = () => {
   try {
     const stored =
@@ -26,9 +24,7 @@ const loadSession = () => {
   }
 };
 
-/**
- * Register user
- */
+
 export const registerUser = createAsyncThunk(
   "user/registerUser",
   async ({ name, email, password, remember = true }, { rejectWithValue }) => {
@@ -47,7 +43,7 @@ export const registerUser = createAsyncThunk(
       id: Date.now().toString(),
       name: name.trim(),
       email: normalizedEmail,
-      password, // Mock only
+      password, 
     };
     existing.push(newUser);
     saveUsers(existing);
@@ -59,7 +55,6 @@ export const registerUser = createAsyncThunk(
       token: "mock-token-" + newUser.id,
     };
 
-    // Save registered user session based on remember option
     if (remember) {
       localStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo));
     } else {
@@ -70,9 +65,7 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-/**
- * Login user
- */
+
 export const loginUser = createAsyncThunk(
   "user/loginUser",
   async ({ identifier, password, remember }, { rejectWithValue }) => {
@@ -95,7 +88,7 @@ export const loginUser = createAsyncThunk(
       token: "mock-token-" + user.id,
     };
 
-    // Save to storage based on remember me
+  
     if (remember) {
       localStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo));
     } else {

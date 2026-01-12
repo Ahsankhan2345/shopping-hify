@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser, clearError } from "../redux/slices/userSlice";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
+import { FiLock, FiUser, FiEye, FiEyeOff, FiCpu, FiAlertTriangle } from "react-icons/fi";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -21,200 +22,178 @@ const Login = () => {
 
   const identifierRef = useRef(null);
 
-  // focus input on mount
   useEffect(() => {
     identifierRef.current?.focus();
   }, []);
 
-  // Redirect after login -> home page
   useEffect(() => {
     if (userInfo) {
-      setIdentifier("");
-      setPassword("");
       navigate("/", { replace: true });
     }
   }, [userInfo, navigate]);
 
-  // Clear error when typing
   useEffect(() => {
     if (localError || errorFromSlice) {
       const timer = setTimeout(() => {
         setLocalError("");
         dispatch(clearError());
-      }, 2500);
+      }, 3500);
       return () => clearTimeout(timer);
     }
   }, [localError, errorFromSlice, dispatch]);
 
-  const validate = () => {
-    if (!identifier.trim() || !password)
-      return "Both identifier and password are required.";
-    if (password.length < 6) return "Password must be at least 6 characters.";
-    return "";
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const vErr = validate();
-    if (vErr) {
-      setLocalError(vErr);
+    if (!identifier.trim() || !password) {
+      setLocalError("Identification required for access.");
       return;
     }
     const resultAction = await dispatch(
       loginUser({ identifier: identifier.trim(), password, remember })
     );
-
     if (loginUser.rejected.match(resultAction)) {
-      setLocalError(resultAction.payload || "Login failed. Please try again.");
+      setLocalError(resultAction.payload || "Authentication failed.");
     }
   };
 
-  // Mock Google / GitHub login
-  const handleOAuth = (provider) => {
-    if (loading) return;
-    alert(`${provider} login not implemented. Use Firebase/Auth0 for real login.`);
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 px-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#020617] relative overflow-hidden px-4 py-8">
+      {/* Responsive Neural Background Gradients */}
+      <div className="absolute top-[-10%] left-[-10%] w-[60%] md:w-[40%] h-[40%] bg-emerald-500/10 blur-[80px] md:blur-[120px] rounded-full" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[60%] md:w-[40%] h-[40%] bg-emerald-500/5 blur-[80px] md:blur-[120px] rounded-full" />
+
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.45, ease: "easeOut" }}
-        className="w-full max-w-md bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-8 relative overflow-hidden"
+        className="w-full max-w-[450px] bg-white/5 backdrop-blur-2xl rounded-[2rem] md:rounded-[2.5rem] border border-white/10 shadow-2xl p-6 sm:p-8 md:p-10 relative z-10"
       >
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-t-3xl" />
-
-        <h2 className="text-3xl font-extrabold text-gray-900 mb-1 text-center">
-          Welcome Back
-        </h2>
-        <p className="text-sm text-gray-500 mb-6 text-center">
-          Sign in to continue to{" "}
-          <span className="font-medium text-emerald-500">Shopping HIFY</span>
-        </p>
-
-        {(localError || errorFromSlice) && (
-          <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-2 rounded mb-4 flex items-center gap-2">
-            <span className="text-sm">{localError || errorFromSlice}</span>
+        {/* Header - Scalable Text */}
+        <div className="text-center mb-6 md:mb-8">
+          <div className="inline-flex p-3 rounded-2xl bg-emerald-500/10 text-emerald-500 mb-4 border border-emerald-500/20">
+            <FiCpu className="text-2xl md:text-3xl" />
           </div>
-        )}
+          <h2 className="text-2xl md:text-3xl font-black text-white tracking-tighter">
+            System <span className="text-emerald-500">Access</span>
+          </h2>
+          <p className="text-slate-400 text-xs md:text-sm mt-2 font-medium">
+            Initialize your ShopNova AI session
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="relative">
-            <input
-              ref={identifierRef}
-              id="identifier"
-              type="text"
-              placeholder="Email or username"
-              className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition"
-              value={identifier}
-              onChange={(e) => {
-                setIdentifier(e.target.value);
-                setLocalError("");
-                dispatch(clearError());
-              }}
-              disabled={loading}
-              required
-            />
-            <label
-              htmlFor="identifier"
-              className="absolute left-4 -top-2 bg-white px-1 text-xs font-medium text-gray-600"
+        <AnimatePresence mode="wait">
+          {(localError || errorFromSlice) && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl mb-6 flex items-center gap-3 text-[10px] md:text-xs font-bold uppercase tracking-wider"
             >
-              Email or Username
+              <FiAlertTriangle className="flex-shrink-0 text-base" />
+              <span className="truncate">{localError || errorFromSlice}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+          {/* Inputs - Touch friendly heights for mobile */}
+          <div className="space-y-1.5 md:space-y-2">
+            <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">
+              Neural ID / Email
             </label>
-          </div>
-
-          <div className="relative">
-            <input
-              id="password"
-              type={showPwd ? "text" : "password"}
-              placeholder="Password"
-              className="w-full px-4 py-3 bg-gray-50 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 transition pr-12"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setLocalError("");
-                dispatch(clearError());
-              }}
-              disabled={loading}
-              required
-            />
-            <label
-              htmlFor="password"
-              className="absolute left-4 -top-2 bg-white px-1 text-xs font-medium text-gray-600"
-            >
-              Password
-            </label>
-            <button
-              type="button"
-              onClick={() => setShowPwd((s) => !s)}
-              aria-label={showPwd ? "Hide password" : "Show password"}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-600"
-            >
-              {showPwd ? "Hide" : "Show"}
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between text-sm">
-            <label className="flex items-center gap-2">
+            <div className="relative group">
+              <FiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-500 transition-colors" />
               <input
-                type="checkbox"
-                checked={remember}
-                onChange={() => setRemember((r) => !r)}
-                className="h-4 w-4 rounded border-gray-300"
+                ref={identifierRef}
+                type="text"
+                placeholder="Enter identifier"
+                className="w-full pl-11 pr-4 py-3.5 md:py-4 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl text-white text-sm placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
               />
-              <span className="text-gray-600">Remember me</span>
-            </label>
-            <Link to="/forgot-password" className="text-emerald-500 hover:underline">
-              Forgot password?
-            </Link>
+            </div>
           </div>
+
+          <div className="space-y-1.5 md:space-y-2">
+            <div className="flex justify-between items-center px-1">
+              <label className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                Security Key
+              </label>
+              <Link to="/forgot-password" size="sm" className="text-[9px] md:text-[10px] font-black uppercase text-emerald-500 hover:text-emerald-400 tracking-wider">
+                Recover?
+              </Link>
+            </div>
+            <div className="relative group">
+              <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-500 transition-colors" />
+              <input
+                type={showPwd ? "text" : "password"}
+                placeholder="••••••••"
+                className="w-full pl-11 pr-12 py-3.5 md:py-4 bg-white/5 border border-white/10 rounded-xl md:rounded-2xl text-white text-sm placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPwd(!showPwd)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white p-1"
+              >
+                {showPwd ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Checkbox - Improved touch target */}
+          <label className="flex items-center gap-3 cursor-pointer group w-fit py-1">
+            <div className="relative flex items-center">
+              <input type="checkbox" checked={remember} onChange={() => setRemember(!remember)} className="peer hidden" />
+              <div className="w-5 h-5 border-2 border-white/10 rounded-md peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-all" />
+              <FiCheckCircle className="absolute text-slate-950 opacity-0 peer-checked:opacity-100 left-[2px] w-4 h-4" />
+            </div>
+            <span className="text-[10px] md:text-xs font-bold text-slate-400 group-hover:text-slate-200 transition-colors uppercase tracking-widest">
+              Maintain Session
+            </span>
+          </label>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:brightness-105 transition"
+            className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-800 text-slate-950 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98] text-xs md:text-sm"
           >
-            {loading ? "Signing in..." : "Login"}
+            {loading ? "Decrypting..." : "Initialize Access"}
           </button>
         </form>
 
-        <div className="my-4 flex items-center gap-2">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-xs uppercase text-gray-400">or continue with</span>
-          <div className="flex-1 h-px bg-gray-200" />
+        {/* Divider */}
+        <div className="my-6 md:my-8 flex items-center gap-4">
+          <div className="flex-1 h-px bg-white/10" />
+          <span className="text-[8px] md:text-[10px] font-black uppercase text-slate-600 tracking-[0.3em] whitespace-nowrap">External Nodes</span>
+          <div className="flex-1 h-px bg-white/10" />
         </div>
 
-        <div className="flex gap-3 mb-6">
-          <button
-            type="button"
-            onClick={() => handleOAuth("Google")}
-            disabled={loading}
-            className="flex-1 flex justify-center items-center gap-2 border border-gray-200 rounded-xl py-2 text-sm hover:shadow-md transition disabled:opacity-60"
-          >
-            <FcGoogle className="w-5 h-5" />
-            Google
+        {/* OAuth Buttons - Stacked on tiny screens, side-by-side on mobile+ */}
+        <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+          <button className="flex-1 flex justify-center items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl py-3 text-[10px] md:text-xs font-bold text-white transition-all">
+            <FcGoogle size={18} /> GOOGLE
           </button>
-          <button
-            type="button"
-            onClick={() => handleOAuth("GitHub")}
-            disabled={loading}
-            className="flex-1 flex justify-center items-center gap-2 border border-gray-200 rounded-xl py-2 text-sm hover:shadow-md transition disabled:opacity-60"
-          >
-            <FaGithub className="w-5 h-5" />
-            GitHub
+          <button className="flex-1 flex justify-center items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl py-3 text-[10px] md:text-xs font-bold text-white transition-all">
+            <FaGithub size={18} /> GITHUB
           </button>
         </div>
 
-        <p className="mt-1 text-center text-sm">
-          Don’t have an account?{" "}
-          <Link to="/register" className="text-emerald-500 font-medium hover:underline">
-            Sign up
+        <p className="mt-8 text-center text-[10px] md:text-xs text-slate-500 font-bold uppercase tracking-widest">
+          New to the Grid?{" "}
+          <Link to="/register" className="text-emerald-500 hover:text-emerald-400 underline decoration-emerald-500/30 underline-offset-4">
+            Register Account
           </Link>
         </p>
       </motion.div>
     </div>
   );
 };
+
+const FiCheckCircle = ({ className }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+  </svg>
+);
 
 export default Login;

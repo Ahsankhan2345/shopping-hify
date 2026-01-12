@@ -6,6 +6,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { FiCheckCircle, FiDownload, FiPrinter, FiCpu, FiCreditCard, FiTruck } from "react-icons/fi";
 
 function Checkout() {
   const dispatch = useDispatch();
@@ -30,7 +31,7 @@ function Checkout() {
 
   const handlePlaceOrder = () => {
     if (!paymentMethod || !deliveryMethod) {
-      alert("Please select both payment and delivery methods.");
+      alert("Please initialize all transmission protocols (Select methods).");
       return;
     }
     setIsPaid(true);
@@ -47,180 +48,220 @@ function Checkout() {
 
   const handleDownloadPDF = () => {
     const input = receiptRef.current;
-    html2canvas(input).then((canvas) => {
+    html2canvas(input, { scale: 2 }).then((canvas) => {
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
-      const imgProps = pdf.getImageProperties(imgData);
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save("receipt.pdf");
+      pdf.save(`ShopNova_Invoice_${Date.now()}.pdf`);
       handleClearCartAfterDownload();
     });
   };
 
   if (cartItems.length === 0 && !orderPlaced) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white">
-        <h2 className="text-3xl font-bold mb-4">Your cart is empty 🛒</h2>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#020617] text-white px-4">
+        <h2 className="text-3xl font-black mb-6 tracking-tighter">Transmission Interrupted (Empty Cart)</h2>
         <Link
           to="/products"
-          className="bg-emerald-500 hover:bg-emerald-600 px-6 py-3 rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
+          className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-8 py-4 rounded-2xl shadow-lg transition-all"
         >
-          Continue Shopping
+          RETURN TO CATALOG
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 px-4 py-10">
-      <div className="w-full max-w-4xl bg-white/90 backdrop-blur rounded-2xl shadow-lg p-6">
-        <h1 className="text-4xl font-extrabold text-center text-emerald-500 mb-8">
-          {orderPlaced ? "✅ Order Placed!" : "Checkout"}
-        </h1>
-
+    <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center px-4 py-20">
+      <div className="w-full max-w-4xl">
+        
         {orderPlaced ? (
-          <>
-            {/* Receipt */}
+          <div className="space-y-8">
+            <div className="text-center">
+              <motion.div 
+                initial={{ scale: 0 }} 
+                animate={{ scale: 1 }} 
+                className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4"
+              >
+                <FiCheckCircle className="text-white text-4xl" />
+              </motion.div>
+              <h1 className="text-4xl font-black text-slate-900 tracking-tighter">Transmission Successful</h1>
+              <p className="text-slate-500 font-medium">Your order has been logged into the Nova Neural Grid.</p>
+            </div>
+
+            {/* HIGH-TECH RECEIPT */}
             <motion.div
               ref={receiptRef}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="bg-white rounded-2xl shadow-lg p-8 max-w-2xl mx-auto"
+              className="bg-white border border-slate-200 rounded-[2rem] shadow-2xl p-10 max-w-2xl mx-auto overflow-hidden relative"
             >
-              {/* Header */}
-              <div className="flex justify-between items-center border-b pb-4 mb-4">
+              {/* Receipt Background Branding */}
+              <div className="absolute top-[-50px] right-[-50px] text-slate-50 opacity-[0.03] rotate-12">
+                <FiCpu size={300} />
+              </div>
+
+              <div className="flex justify-between items-start border-b border-slate-100 pb-8 mb-8 relative z-10">
                 <div>
-                  <h1 className="text-2xl font-extrabold text-emerald-700">
-                    Shopping HIFY
-                  </h1>
-                  <p className="text-xs text-gray-500">Owned by Ahsan Khan</p>
-                  <p className="text-xs text-gray-500">123 Mall Road, Lahore</p>
-                  <p className="text-xs text-gray-500">Phone: 0344-0217023</p>
-                  <p className="text-xs text-gray-500">
-                    Email: support@shoppinghify.com
-                  </p>
-                </div>
-                <img src="/logo.png" alt="Logo" className="w-16 h-16 object-contain" />
-              </div>
-
-              {/* Invoice Info */}
-              <div className="flex justify-between mb-4 text-sm">
-                <div>
-                  <p><strong>Invoice No:</strong> INV-{Date.now()}</p>
-                  <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
-                  <p><strong>Time:</strong> {new Date().toLocaleTimeString()}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold">Customer:</p>
-                  <p>Guest User</p>
-                </div>
-              </div>
-
-              {/* Items */}
-              <div className="grid grid-cols-4 gap-2 font-semibold border-t border-b py-2 text-sm">
-                <p>Item</p>
-                <p className="text-center">Qty</p>
-                <p className="text-center">Price</p>
-                <p className="text-right">Subtotal</p>
-              </div>
-              {orderItems.map((item) => (
-                <div key={item._id} className="grid grid-cols-4 gap-2 py-2 text-sm border-b last:border-b-0">
-                  <p>{item.name}</p>
-                  <p className="text-center">{item.qty}</p>
-                  <p className="text-center">Rs. {item.price}</p>
-                  <p className="text-right">Rs. {item.price * item.qty}</p>
-                </div>
-              ))}
-
-              {/* Totals */}
-              <div className="mt-4 text-sm">
-                <div className="flex justify-between">
-                  <span className="font-semibold">Subtotal:</span>
-                  <span>Rs. {total.toFixed(0)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-semibold">Tax (5%):</span>
-                  <span>Rs. {taxAmount.toFixed(0)}</span>
-                </div>
-                <div className="flex justify-between border-t pt-2 mt-2 text-lg font-bold text-emerald-700">
-                  <span>{isPaid ? "Total Paid:" : "Total Due:"}</span>
-                  <span>Rs. {grandTotal.toFixed(0)}</span>
-                </div>
-                {isPaid && (
-                  <p className="text-green-700 text-center font-semibold mt-2">
-                    ✅ Payment Received. Thank you!
-                  </p>
-                )}
-              </div>
-
-              {/* Payment & Delivery */}
-              <div className="mt-4 text-sm">
-                <p><strong>Payment Method:</strong> {paymentMethod}</p>
-                <p><strong>Delivery Method:</strong> {deliveryMethod}</p>
-              </div>
-              <p className="text-center text-xs text-gray-500 mt-6 italic">
-                Thank you for shopping with Shopping HIFY!
-              </p>
-            </motion.div>
-
-            {/* Actions */}
-            <div className="flex gap-3 mt-6 justify-center">
-              <button onClick={handlePrint} className="bg-emerald-600 text-white px-5 py-2 rounded-lg hover:bg-emerald-700 transition-transform duration-300 hover:scale-105">
-                Print Receipt
-              </button>
-              <button onClick={handleDownloadPDF} className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition-transform duration-300 hover:scale-105">
-                Download PDF
-              </button>
-            </div>
-          </>
-        ) : (
-          /* Checkout Form */
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-2xl mx-auto"
-          >
-            {cartItems.map((item) => (
-              <div key={item._id} className="border-b py-4 flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                  <img src={item.imageUrl} alt={item.name} className="w-16 h-16 object-contain rounded-lg border" />
-                  <div>
-                    <h3 className="font-semibold text-gray-800">{item.name}</h3>
-                    <p className="text-gray-600">Qty: {item.qty}</p>
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tighter flex items-center gap-2">
+                    <FiCpu className="text-emerald-500" /> SHOP<span className="text-emerald-500">NOVA</span> AI
+                  </h2>
+                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2 space-y-1">
+                    <p>Operator: Ahsan Khan</p>
+                    <p>Node: 123 Mall Road, Lahore</p>
+                    <p>Protocol: support@shopnovaai.com</p>
                   </div>
                 </div>
-                <p className="text-emerald-600 font-bold">
-                  Rs. {item.price * item.qty}
-                </p>
+                <div className="text-right">
+                  <span className="bg-emerald-500/10 text-emerald-600 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                    Official Invoice
+                  </span>
+                  <p className="text-xs text-slate-400 mt-4">ID: #{Date.now().toString().slice(-8)}</p>
+                </div>
               </div>
-            ))}
 
-            <label className="block text-gray-700 font-medium mt-4 mb-1">Select Payment Method:</label>
-            <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="border w-full p-2 rounded mb-4">
-              <option value="">-- Select Payment --</option>
-              <option value="Cash on Delivery">Cash on Delivery</option>
-              <option value="Card">Debit/Credit Card</option>
-              <option value="JazzCash / EasyPaisa">JazzCash / EasyPaisa</option>
-            </select>
+              {/* Invoice Meta */}
+              <div className="grid grid-cols-2 gap-8 mb-8 text-sm relative z-10">
+                <div>
+                  <h4 className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-1">Billing To</h4>
+                  <p className="font-black text-slate-900">Guest User (Neural Guest)</p>
+                </div>
+                <div className="text-right">
+                  <h4 className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-1">Timestamp</h4>
+                  <p className="font-black text-slate-900">{new Date().toLocaleDateString()} | {new Date().toLocaleTimeString()}</p>
+                </div>
+              </div>
 
-            <label className="block text-gray-700 font-medium mb-1">Select Delivery Method:</label>
-            <select value={deliveryMethod} onChange={(e) => setDeliveryMethod(e.target.value)} className="border w-full p-2 rounded mb-4">
-              <option value="">-- Select Delivery --</option>
-              <option value="Standard (3-5 Days)">Standard (3-5 Days)</option>
-              <option value="Express (1-2 Days)">Express (1-2 Days)</option>
-            </select>
+              {/* Items Table */}
+              <div className="space-y-4 relative z-10">
+                <div className="grid grid-cols-4 text-[10px] font-black uppercase tracking-widest text-slate-400 pb-2 border-b border-slate-50">
+                  <p className="col-span-2">Module</p>
+                  <p className="text-center">Qty</p>
+                  <p className="text-right">Subtotal</p>
+                </div>
+                {orderItems.map((item) => (
+                  <div key={item._id} className="grid grid-cols-4 py-2 text-sm border-b border-slate-50 last:border-0">
+                    <p className="col-span-2 font-bold text-slate-900">{item.name}</p>
+                    <p className="text-center text-slate-500">x{item.qty}</p>
+                    <p className="text-right font-black text-slate-900">Rs. {item.price * item.qty}</p>
+                  </div>
+                ))}
+              </div>
 
-            <h2 className="text-xl font-bold mt-4 text-gray-800">
-              Total (incl. Tax): Rs. {grandTotal.toFixed(0)}
-            </h2>
+              {/* Financial Calculation */}
+              <div className="mt-8 pt-6 border-t border-slate-100 relative z-10">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Net Total</span>
+                  <span className="font-bold text-slate-900">Rs. {total}</span>
+                </div>
+                <div className="flex justify-between text-sm mb-4">
+                  <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">AI Governance Tax (5%)</span>
+                  <span className="font-bold text-slate-900">Rs. {taxAmount.toFixed(0)}</span>
+                </div>
+                <div className="flex justify-between items-center bg-slate-900 text-white p-4 rounded-2xl">
+                  <span className="font-black uppercase tracking-widest text-xs">Final Settlement</span>
+                  <span className="text-2xl font-black text-emerald-400">Rs. {grandTotal.toFixed(0)}</span>
+                </div>
+              </div>
 
-            <button onClick={handlePlaceOrder} className="mt-4 w-full bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition-transform duration-300 hover:scale-105">
-              Place Order
-            </button>
+              <div className="mt-6 flex justify-between text-[10px] font-black uppercase text-slate-400 tracking-tighter">
+                <p>Payment: {paymentMethod}</p>
+                <p>Logistics: {deliveryMethod}</p>
+              </div>
+            </motion.div>
+
+            {/* Post-Order Actions */}
+            <div className="flex gap-4 justify-center">
+              <button onClick={handlePrint} className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-slate-800 transition-all">
+                <FiPrinter /> Print Invoice
+              </button>
+              <button onClick={handleDownloadPDF} className="flex items-center gap-2 bg-emerald-500 text-slate-950 px-6 py-3 rounded-xl font-black hover:bg-emerald-400 transition-all">
+                <FiDownload /> Download Data
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* CHECKOUT INTERFACE */
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden"
+          >
+            <div className="bg-slate-900 p-8 text-white">
+              <h1 className="text-3xl font-black tracking-tighter">Checkout Protocol</h1>
+              <p className="text-emerald-400 text-xs font-bold uppercase tracking-[0.2em] mt-2">Finalize your neural shopping session</p>
+            </div>
+
+            <div className="p-8 md:p-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+              <div className="space-y-6">
+                <h3 className="text-slate-900 font-black uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
+                  <div className="w-1 h-4 bg-emerald-500"></div> Order Modules
+                </h3>
+                <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                  {cartItems.map((item) => (
+                    <div key={item._id} className="flex items-center gap-4 py-4 border-b border-slate-50 last:border-0">
+                      <img src={item.imageUrl} alt={item.name} className="w-12 h-12 object-contain bg-slate-50 rounded-lg" />
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-slate-900">{item.name}</h4>
+                        <p className="text-[10px] text-slate-400 font-black uppercase">Qty: {item.qty}</p>
+                      </div>
+                      <p className="font-black text-slate-900 text-sm">Rs. {item.price * item.qty}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="text-slate-400 font-black uppercase text-[10px] tracking-widest mb-2 block">Payment Gateway</label>
+                  <div className="relative">
+                    <select 
+                      value={paymentMethod} 
+                      onChange={(e) => setPaymentMethod(e.target.value)} 
+                      className="w-full bg-slate-50 border-0 p-4 rounded-xl font-bold text-slate-900 appearance-none focus:ring-2 focus:ring-emerald-500/20"
+                    >
+                      <option value="">Select Protocol</option>
+                      <option value="Cash on Delivery">Cash on Delivery</option>
+                      <option value="Card">Direct Card Transfer</option>
+                      <option value="JazzCash / EasyPaisa">JazzCash / EasyPaisa</option>
+                    </select>
+                    <FiCreditCard className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-slate-400 font-black uppercase text-[10px] tracking-widest mb-2 block">Logistics Speed</label>
+                  <div className="relative">
+                    <select 
+                      value={deliveryMethod} 
+                      onChange={(e) => setDeliveryMethod(e.target.value)} 
+                      className="w-full bg-slate-50 border-0 p-4 rounded-xl font-bold text-slate-900 appearance-none focus:ring-2 focus:ring-emerald-500/20"
+                    >
+                      <option value="">Select Speed</option>
+                      <option value="Standard (3-5 Days)">Standard Transit</option>
+                      <option value="Express (1-2 Days)">Nova Express (High Speed)</option>
+                    </select>
+                    <FiTruck className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
+                  <div className="flex justify-between items-end">
+                    <span className="text-[10px] font-black uppercase text-emerald-800 tracking-widest">Total Settlement</span>
+                    <span className="text-3xl font-black text-emerald-600">Rs. {grandTotal.toFixed(0)}</span>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={handlePlaceOrder} 
+                  className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black tracking-widest hover:bg-emerald-500 hover:text-slate-950 transition-all duration-500 group"
+                >
+                  INITIALIZE ORDER
+                </button>
+              </div>
+            </div>
           </motion.div>
         )}
       </div>
